@@ -13,17 +13,18 @@ BASE_URL = "https://cdn-api.co-vin.in"
 
 
 def make_covin_request(request_url, params=None) -> requests.Response:
-    num_retries = 3
     response = requests.get(
         request_url,
         params=params,
-        headers={"Accept": "application/json", "Accept-Language": "en-US"}
+        headers={
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, deflate, br",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
+        }
     )
 
-    while num_retries > 0:
-        num_retries -= 1
-        if response.ok:
-            break
+    if not response.ok:
+        print(response.text)
 
     response.raise_for_status()
     return response
