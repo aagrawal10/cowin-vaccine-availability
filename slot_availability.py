@@ -101,7 +101,7 @@ def parse_slot_results(response: requests.Response):
             config.NOTIFIED_FOR_45_PLUS = True
 
     if config.NOTIFIED_FOR_18_PLUS and config.NOTIFIED_FOR_45_PLUS:
-        sys.exit(0)
+        return
 
 
 def check_slot_availability_by_district(district_id):
@@ -251,7 +251,10 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if config.DISTRICT_ID:
-        check_slot_availability_by_district(config.DISTRICT_ID)
+        all_districts = [int(i) for i in config.DISTRICT_ID.split(",")]
+        for district in all_districts:
+            print(f"Checking for district: {district}")
+            check_slot_availability_by_district(district)
         sys.exit(0)
 
     print("One of ZIPCODE or DISTRICT_ID must be specified in config")
