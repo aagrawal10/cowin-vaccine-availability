@@ -81,7 +81,7 @@ def parse_slot_results(response: requests.Response):
         }
         for center in centers
         for session in center.get("sessions") or []
-        if config.CHECK_FOR_FIRST_DOSE and session.get("available_capacity_dose1", 0)
+        if config.CHECK_FOR_FIRST_DOSE and session["available_capacity_dose1"] > 2
     ]
 
     # Add sessions for dose 2
@@ -99,7 +99,7 @@ def parse_slot_results(response: requests.Response):
         }
         for center in centers
         for session in center.get("sessions") or []
-        if config.CHECK_FOR_SECOND_DOSE and session["available_capacity_dose2"] > 0
+        if config.CHECK_FOR_SECOND_DOSE and session["available_capacity_dose2"] > 2
     ])
 
     if not config.NOTIFIED_FOR_18_PLUS and config.CHECK_FOR_18_YRS:
