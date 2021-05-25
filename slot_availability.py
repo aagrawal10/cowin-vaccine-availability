@@ -66,21 +66,41 @@ def parse_slot_results(response: requests.Response):
         print("No centers found")
         return
 
+    # Add sessions for dose 1
     available_sessions_with_center_info = [
         {
             "center_id": center["center_id"],
             "name": center["name"],
             "pincode": center["pincode"],
-            "session_id": session["session_id"],
-            "available_capacity": session["available_capacity"],
+            "session_id": f'{session["session_id"]}_dose1',
+            "available_capacity": session["available_capacity_dose1"],
             "slot_date": session["date"],
             "min_age_limit": session["min_age_limit"],
             "vaccine": session["vaccine"],
+            "dose": "dose1",
         }
         for center in centers
         for session in center.get("sessions") or []
-        if session["available_capacity"] > 0
+        if config.CHECK_FOR_FIRST_DOSE and session.get("available_capacity_dose1", 0)
     ]
+
+    # Add sessions for dose 2
+    available_sessions_with_center_info.extend([
+        {
+            "center_id": center["center_id"],
+            "name": center["name"],
+            "pincode": center["pincode"],
+            "session_id": f'{session["session_id"]}_dose2',
+            "available_capacity": session["available_capacity_dose2"],
+            "slot_date": session["date"],
+            "min_age_limit": session["min_age_limit"],
+            "vaccine": session["vaccine"],
+            "dose": "dose2",
+        }
+        for center in centers
+        for session in center.get("sessions") or []
+        if config.CHECK_FOR_SECOND_DOSE and session["available_capacity_dose2"] > 0
+    ])
 
     if not config.NOTIFIED_FOR_18_PLUS and config.CHECK_FOR_18_YRS:
         sessions_with_slots_for_18_plus = [
@@ -190,7 +210,7 @@ def send_message_for_vaccine_slots(sessions_list):
             "elements": [
                 {
                     "type": "plain_text",
-                    "text": f"{session_info['name']}({session_info['pincode']}) -> {session_info['available_capacity']} -> {session_info['vaccine']} -> {session_info['slot_date']}"
+                    "text": f"{session_info['name']}({session_info['pincode']}) -> {session_info['dose']} -> {session_info['available_capacity']} -> {session_info['vaccine']} -> {session_info['slot_date']}"
                 }
             ]
         })
@@ -201,7 +221,7 @@ def send_message_for_vaccine_slots(sessions_list):
                 "elements": [
                     {
                         "type": "plain_text",
-                        "text": f"{session_info['name']}({session_info['pincode']}) -> {session_info['available_capacity']} -> {session_info['vaccine']} -> {session_info['slot_date']}"
+                        "text": f"{session_info['name']}({session_info['pincode']}) -> {session_info['dose']} -> {session_info['available_capacity']} -> {session_info['vaccine']} -> {session_info['slot_date']}"
                     }
                 ]
             })
